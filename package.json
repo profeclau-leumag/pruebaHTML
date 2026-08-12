@@ -1,18 +1,15 @@
 {
-  "name": "resumenoteca",
-  "version": "1.0.0",
+  "name": "cinematch-tmdb",
+  "version": "2.0.1",
   "private": true,
-  "description": "Biblioteca colaborativa de resúmenes con moderación y PostgreSQL.",
-  "main": "server.js",
+  "description": "Recomendador de películas con TMDB, Node.js y Railway",
+  "type": "commonjs",
   "scripts": {
     "start": "node server.js",
-    "check": "node --check server.js && node --check public/app.js && node --check public/admin.js",
-    "seed": "node seed.js"
+    "dev": "node --watch server.js",
+    "check": "node --check server.js && node --check public/app.js"
   },
   "engines": {
     "node": ">=20"
-  },
-  "dependencies": {
-    "pg": "^8.13.1"
   }
 }

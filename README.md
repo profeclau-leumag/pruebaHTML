@@ -1,117 +1,99 @@
-# Resumenoteca
+# CineMatch + TMDB
 
-Biblioteca colaborativa de resúmenes con moderación previa.
+CineMatch es un recomendador de películas que consulta datos reales de **TMDB (The Movie Database)** mediante un backend Node.js.
 
-## Funciones
+## Qué incluye
 
-### Visitantes
-- Buscar por título, tema o contenido.
-- Filtrar por asignatura y nivel.
-- Leer resúmenes aprobados.
-- Copiar o descargar como `.txt`.
-- Compartir enlaces directos.
-- Reportar publicaciones.
-- Enviar un resumen sin cuenta.
-- Importar `.txt` o `.md` al formulario.
+- Filtros por género, ánimo, duración, época y puntuación mínima.
+- Recomendación destacada con póster, sinopsis, duración y nota.
+- Disponibilidad de streaming en Chile cuando TMDB/JustWatch tiene datos.
+- Favoritas guardadas en el navegador con `localStorage`.
+- Recomendaciones personalizadas a partir de las últimas películas favoritas.
+- Backend que oculta el token de TMDB: el navegador nunca recibe `TMDB_TOKEN`.
+- Diseño responsive para computador y teléfono.
 
-### Administración
-- Los envíos nuevos quedan `pending`.
-- Panel en `/admin.html`.
-- Aprobar o rechazar envíos.
-- Revisar publicaciones reportadas.
-- Eliminar publicaciones reportadas.
+## 1. Obtener el token de TMDB
 
-## Por qué usa Railway + PostgreSQL
+1. Crea/inicia sesión en una cuenta de TMDB.
+2. En la configuración de la cuenta, entra a la sección **API**.
+3. Solicita acceso a la API si todavía no lo tienes.
+4. Copia el valor **API Read Access Token**.
 
-Esta web es multiusuario: si una persona publica un resumen, debe quedar disponible para las demás.
-Por eso necesita una base de datos compartida y no basta GitHub Pages.
+No pegues ese token en `public/app.js` ni lo subas a GitHub.
 
-Arquitectura:
+## 2. Probar localmente
 
-```text
-Navegador
-   ↓
-Node.js
-   ↓
-PostgreSQL
-```
-
-## Variables de entorno
-
-En Railway configura:
-
-```text
-DATABASE_URL=...
-ADMIN_KEY=una-clave-larga-y-privada
-NODE_ENV=production
-```
-
-`ADMIN_KEY` nunca debe escribirse dentro de `public/` ni subirse a GitHub.
-
-## Publicar en Railway
-
-1. Sube esta carpeta a un repositorio de GitHub.
-2. En Railway crea un proyecto desde ese repositorio.
-3. Añade un servicio PostgreSQL al mismo proyecto.
-4. En el servicio web agrega `DATABASE_URL` referenciando la variable del PostgreSQL.
-5. Crea `ADMIN_KEY` con una clave privada y difícil de adivinar.
-6. Agrega `NODE_ENV=production`.
-7. Railway ejecutará `npm start`.
-8. En **Settings → Networking**, genera un dominio público.
-
-La primera vez que arranca, `server.js` crea automáticamente las tablas.
-
-## Resúmenes de ejemplo
-
-Con la base configurada puedes agregar tres ejemplos:
-
-```bash
-npm run seed
-```
-
-Solo se agregan si la tabla está vacía.
-
-## Desarrollo local
-
-Necesitas Node.js 20+ y PostgreSQL:
+Necesitas Node.js 20 o superior.
 
 ```bash
 npm install
-DATABASE_URL="postgresql://..." ADMIN_KEY="tu-clave" npm start
 ```
 
-Luego abre:
+En macOS/Linux:
+
+```bash
+TMDB_TOKEN="TU_TOKEN" npm start
+```
+
+En PowerShell:
+
+```powershell
+$env:TMDB_TOKEN="TU_TOKEN"
+npm start
+```
+
+Abre `http://localhost:3000`.
+
+## 3. Subir a GitHub
+
+Sube todo el proyecto excepto `.env` y `node_modules`. Ambos ya están considerados en `.gitignore`.
+
+## 4. Publicar en Railway
+
+1. Crea un proyecto en Railway desde el repositorio de GitHub.
+2. Railway detectará `package.json` y ejecutará `npm start`.
+3. En **Variables**, agrega:
+   - Nombre: `TMDB_TOKEN`
+   - Valor: tu **API Read Access Token** de TMDB.
+4. Haz un nuevo deploy si Railway no lo hace automáticamente.
+5. En **Networking**, genera el dominio público.
+
+No necesitas configurar `PORT`: Railway la entrega automáticamente al proceso.
+
+## Cómo funciona la recomendación
+
+TMDB no tiene un filtro llamado “ánimo”. CineMatch lo interpreta como una heurística:
+
+- Divertido → comedia, animación, familiar.
+- Emocionante → acción, aventura, ciencia ficción.
+- Reflexivo → drama, ciencia ficción, documental.
+- Inspirador → drama, aventura, familiar.
+- Intenso → thriller, crimen, misterio.
+- Tranquilo → romance, animación, familiar.
+
+Si además eliges un género concreto, el género elegido tiene prioridad y el ánimo se usa para reordenar los resultados. Eso evita combinaciones demasiado restrictivas que devuelvan cero películas.
+
+## Estructura
 
 ```text
-http://localhost:3000
+CineMatch_TMDB/
+├─ package.json
+├─ server.js
+├─ .env.example
+├─ .gitignore
+├─ README.md
+└─ public/
+   ├─ index.html
+   ├─ style.css
+   └─ app.js
 ```
 
-Panel de administración:
+## Seguridad básica
 
-```text
-http://localhost:3000/admin.html
-```
+`TMDB_TOKEN` solo se lee en `server.js`. El frontend llama rutas propias como `/api/discover`, y el servidor es quien se comunica con TMDB. Esto permite que el repositorio pueda ser público sin publicar la credencial.
 
-## Reglas y protecciones incorporadas
+## Atribuciones
 
-- Nada se publica automáticamente.
-- Máximo 5 envíos por hora por origen como protección básica.
-- Máximo 12.000 caracteres por resumen.
-- Consultas SQL parametrizadas.
-- El contenido del usuario se renderiza como texto, no como HTML.
-- Clave administrativa en variable de entorno.
-- Encabezados de seguridad.
-- Sistema de reportes.
-- Regla visible para evitar datos personales y copias extensas de material protegido.
+TMDB exige atribución para el uso de su API y datos. La interfaz incluye el aviso requerido. Para una publicación definitiva, reemplaza la marca textual usada en el prototipo por uno de los **logos oficiales aprobados por TMDB** desde su sección oficial de logos y atribución, sin modificarlo.
 
-## Próximas mejoras posibles
-
-- Cuentas opcionales.
-- Etiquetas.
-- Favoritos.
-- Calificaciones.
-- PDF/DOCX mediante almacenamiento de archivos.
-- Autores verificados.
-- Paginación.
-- Búsqueda de texto completo.
-- Moderación distribuida si el sitio crece.
+Los datos de disponibilidad de streaming provienen de JustWatch a través del endpoint de proveedores de TMDB; la interfaz incluye la atribución a JustWatch.
