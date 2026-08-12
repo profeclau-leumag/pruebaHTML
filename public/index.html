@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080a12">
+  <meta name="description" content="CineMatch: recomendaciones de películas según tus ganas de hoy.">
+  <title>CineMatch · ¿Qué vemos hoy?</title>
+  <link rel="preconnect" href="https://image.tmdb.org">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+
+  <header class="topbar shell">
+    <a href="#" class="brand"><span class="brand-mark">▶</span><span>CineMatch</span></a>
+    <div class="top-actions">
+      <button class="icon-btn" id="favoritesJump" title="Ver favoritas">♡ <span id="favoriteCount">0</span></button>
+      <button class="icon-btn" id="themeButton" title="Cambiar tema">☀</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero shell">
+      <div class="hero-copy">
+        <span class="kicker">TU PRÓXIMA PELÍCULA</span>
+        <h1>¿Qué quieres<br><em>ver hoy?</em></h1>
+        <p>No busques durante media hora. Cuéntame qué te apetece y CineMatch hará la primera selección por ti.</p>
+      </div>
+
+      <form class="filter-panel" id="filterForm">
+        <div class="field">
+          <label for="genre">Género</label>
+          <select id="genre"><option value="">Cualquiera</option></select>
+        </div>
+        <div class="field">
+          <label for="mood">Tengo ganas de algo…</label>
+          <select id="mood">
+            <option value="">Sorpréndeme</option>
+            <option value="divertido">😂 Divertido</option>
+            <option value="emocionante">⚡ Emocionante</option>
+            <option value="reflexivo">🧠 Reflexivo</option>
+            <option value="inspirador">✨ Inspirador</option>
+            <option value="intenso">🌪️ Intenso</option>
+            <option value="tranquilo">🌙 Tranquilo</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="duration">Duración</label>
+          <select id="duration">
+            <option value="">No importa</option>
+            <option value="short">Menos de 2 horas</option>
+            <option value="medium">2 h a 2 h 30 min</option>
+            <option value="long">Más de 2 h 30 min</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="era">Época</label>
+          <select id="era">
+            <option value="">Cualquiera</option>
+            <option value="recent">Últimos 4 años</option>
+            <option value="2020s">2020 en adelante</option>
+            <option value="2000-2019">2000–2019</option>
+            <option value="classic">Antes del 2000</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="rating">Puntuación mínima</label>
+          <select id="rating">
+            <option value="5">⭐ 5+</option>
+            <option value="6" selected>⭐ 6+</option>
+            <option value="7">⭐ 7+</option>
+            <option value="8">⭐ 8+</option>
+          </select>
+        </div>
+        <button class="primary-btn" type="submit"><span>✦</span> Encuentra mi película</button>
+      </form>
+    </section>
+
+    <section class="status shell hidden" id="setupNotice">
+      <strong>Falta un paso para activar CineMatch.</strong>
+      <p>Configura la variable <code>TMDB_TOKEN</code> en Railway y vuelve a cargar la página.</p>
+    </section>
+
+    <section class="shell featured-wrap" id="featuredSection">
+      <div class="featured" id="featuredCard">
+        <div class="featured-backdrop" id="featuredBackdrop"></div>
+        <div class="featured-shade"></div>
+        <div class="featured-content">
+          <span class="kicker">RECOMENDACIÓN DESTACADA</span>
+          <h2 id="featuredTitle">Buscando tu próxima película…</h2>
+          <div class="movie-meta" id="featuredMeta"></div>
+          <p class="featured-overview" id="featuredOverview">Conecta la API de TMDB para empezar.</p>
+          <div class="genre-pills" id="featuredGenres"></div>
+          <div class="provider-block hidden" id="providerBlock">
+            <span class="mini-label">Disponible en Chile</span>
+            <div class="providers" id="providerList"></div>
+            <small>Disponibilidad proporcionada por JustWatch.</small>
+          </div>
+          <div class="featured-actions">
+            <button class="primary-btn small" id="anotherButton" type="button">↻ Dame otra</button>
+            <button class="secondary-btn" id="saveFeatured" type="button">♡ Guardar</button>
+            <a class="secondary-btn hidden" id="providerLink" target="_blank" rel="noopener noreferrer">Dónde verla ↗</a>
+          </div>
+        </div>
+        <div class="featured-poster-wrap">
+          <img class="featured-poster" id="featuredPoster" alt="">
+        </div>
+      </div>
+    </section>
+
+    <section class="shell section-block">
+      <div class="section-title-row">
+        <div><span class="kicker">MÁS OPCIONES</span><h2>Por si quieres comparar</h2></div>
+        <span class="result-count" id="resultCount"></span>
+      </div>
+      <div class="movie-grid" id="movieGrid"></div>
+    </section>
+
+    <section class="shell section-block hidden" id="personalSection">
+      <div class="section-title-row">
+        <div><span class="kicker">APRENDIENDO DE TUS FAVORITAS</span><h2>Porque te gustaron…</h2></div>
+        <span class="result-count">Basado en tus últimas favoritas</span>
+      </div>
+      <div class="movie-grid" id="personalGrid"></div>
+    </section>
+
+    <section class="shell favorites-section" id="favoritesSection">
+      <div class="section-title-row">
+        <div><span class="kicker">TU LISTA</span><h2>Favoritas</h2></div>
+        <button class="text-btn" id="clearFavorites" type="button">Vaciar lista</button>
+      </div>
+      <div class="favorites-list" id="favoritesList"></div>
+    </section>
+  </main>
+
+  <footer class="footer shell">
+    <div>
+      <strong>CineMatch</strong>
+      <p>Hecho para decidir qué ver sin perder la noche buscando.</p>
+    </div>
+    <div class="credits">
+      <span class="tmdb-wordmark">TMDB</span>
+      <p>This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+      <p>Los datos de disponibilidad de streaming son proporcionados por JustWatch.</p>
+    </div>
+  </footer>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>
